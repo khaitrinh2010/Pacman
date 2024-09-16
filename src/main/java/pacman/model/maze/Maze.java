@@ -42,8 +42,13 @@ public class Maze {
                 this.ghosts.add(renderable);
             } else if (renderableType == RenderableType.PELLET){
                 this.pellets.add(renderable);
-            } else {
-                this.isWall.put(formatCoordinates(x, y), true);
+            } else if (renderableType == RenderableType.UP_LEFT_WALL ||
+                    renderableType == RenderableType.UP_RIGHT_WALL ||
+                    renderableType == RenderableType.DOWN_LEFT_WALL ||
+                    renderableType == RenderableType.DOWN_RIGHT_WALL ||
+                    renderableType == RenderableType.HORIZONTAL_WALL ||
+                    renderableType == RenderableType.VERTICAL_WALL){
+                isWall.put(formatCoordinates(x, y), true);
             }
 
             this.renderables.add(renderable);
@@ -80,18 +85,14 @@ public class Maze {
     public void updatePossibleDirections(DynamicEntity dynamicEntity){
         int xTile = (int) Math.floor(dynamicEntity.getCenter().getX()/MazeCreator.RESIZING_FACTOR);
         int yTile = (int) Math.floor(dynamicEntity.getCenter().getY()/MazeCreator.RESIZING_FACTOR);
-
         Set<Direction> possibleDirections = new HashSet<>();
-
         // calculates whether entity is in a position where it is able to turn
         if (Math.abs(getCenterOfTile(xTile) - dynamicEntity.getCenter().getX()) < MAX_CENTER_DISTANCE &&
                 Math.abs(getCenterOfTile(yTile) - dynamicEntity.getCenter().getY()) < MAX_CENTER_DISTANCE){
-
             String aboveCoordinates = formatCoordinates(xTile, yTile - 1);
             if (isWall.get(aboveCoordinates) == null){
                 possibleDirections.add(Direction.UP);
             }
-
             String belowCoordinates = formatCoordinates(xTile, yTile + 1);
             if (isWall.get(belowCoordinates) == null){
                 possibleDirections.add(Direction.DOWN);
@@ -106,7 +107,9 @@ public class Maze {
             if (isWall.get(rightCoordinates) == null){
                 possibleDirections.add(Direction.RIGHT);
             }
-        } else {
+        }
+        else {
+            System.out.println(dynamicEntity.toString() + " TURN");
             possibleDirections.add(dynamicEntity.getDirection());
             possibleDirections.add(dynamicEntity.getDirection().opposite());
         }

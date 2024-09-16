@@ -27,27 +27,22 @@ public class MazeCreator {
     public Maze createMaze(){
         File f = new File(this.fileName);
         Maze maze = new Maze();
-
+        int count = 0;
         try {
             Scanner scanner = new Scanner(f);
-
             int y = 0;
-
             while (scanner.hasNextLine()){
-
                 String line = scanner.nextLine();
                 char[] row = line.toCharArray();
-
                 for (int x = 0; x < row.length; x++){
                     EntityFactory entityFactory = entityFactoryRegistry.getFactoryBasedOnCharacter(row[x]);
                     Renderable entity = entityFactory.createEntity(new Vector2D(x * 16, y * 16));
-                    maze.addRenderable(entity, row[x], x * 16, y * 16);
+                    maze.addRenderable(entity, row[x], x, y);
                 }
                 y += 1;
             }
 
             scanner.close();
-            System.out.println(maze.getControllable());
         }
         catch (FileNotFoundException e){
             System.out.println("No maze file was found.");

@@ -16,16 +16,17 @@ import java.util.Random;
  */
 
 public class GhostFactory extends DynamicEntityFactory {
-    private final List<Vector2D> possibleTargetCorners = Arrays.asList(new Vector2D(1, 4), new Vector2D(26, 4), new Vector2D(1, 32), new Vector2D(26,32));
+    private final List<Vector2D> possibleTargetCorners = Arrays.asList(new Vector2D(16, 64), new Vector2D(26 * 16, 64), new Vector2D(16, 32 * 16), new Vector2D(26 * 16,32 * 16));
     public GhostFactory(Image image){
         super(image);
     }
     @Override
     public Renderable createEntity(Vector2D topLeftPosition){
+        Vector2D startingPosition = new Vector2D(topLeftPosition.getX() + 4, topLeftPosition.getY() - 4);
         GhostMode initialGhostMode = GhostMode.SCATTER;
-        BoundingBox ghostBoundingBox = new BoundingBoxImpl(topLeftPosition, image.getHeight(), image.getWidth());
+        BoundingBox ghostBoundingBox = new BoundingBoxImpl(topLeftPosition, this.image.getHeight(), this.image.getWidth());
         KinematicState ghostKinematicState = new KinematicStateImpl.KinematicStateBuilder().build();
-        ghostKinematicState.setPosition(topLeftPosition);
+        ghostKinematicState.setPosition(startingPosition);
         Vector2D ghostTargetCorner = getRandomTargetCorner();
         Direction initialDirection = getRandomDirection();
         return new GhostImpl(this.image, ghostBoundingBox, ghostKinematicState, initialGhostMode, ghostTargetCorner, initialDirection);
