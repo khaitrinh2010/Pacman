@@ -65,4 +65,5 @@ public interface DynamicEntity extends Renderable {
      * @return center position
      */
     Vector2D getCenter();
+
 }

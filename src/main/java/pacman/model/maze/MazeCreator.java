@@ -35,6 +35,12 @@ public class MazeCreator {
                 String line = scanner.nextLine();
                 char[] row = line.toCharArray();
                 for (int x = 0; x < row.length; x++){
+                    if(row[x] == '7'){
+                        count += 1;
+                    }
+                    if(row[x] == '7' && count > 5){
+                        continue;
+                    }
                     EntityFactory entityFactory = entityFactoryRegistry.getFactoryBasedOnCharacter(row[x]);
                     Renderable entity = entityFactory.createEntity(new Vector2D(x * 16, y * 16));
                     maze.addRenderable(entity, row[x], x, y);

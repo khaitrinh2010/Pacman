@@ -3,6 +3,7 @@ package pacman.model.maze;
 import pacman.model.entity.dynamic.DynamicEntity;
 import pacman.model.entity.Renderable;
 import pacman.model.entity.dynamic.physics.Direction;
+import pacman.model.entity.dynamic.player.Pacman;
 
 import java.util.*;
 
@@ -91,6 +92,9 @@ public class Maze {
                 Math.abs(getCenterOfTile(yTile) - dynamicEntity.getCenter().getY()) < MAX_CENTER_DISTANCE){
             String aboveCoordinates = formatCoordinates(xTile, yTile - 1);
             if (isWall.get(aboveCoordinates) == null){
+                if(dynamicEntity instanceof Pacman) {
+                    System.out.println(dynamicEntity.getDirection());
+                }
                 possibleDirections.add(Direction.UP);
             }
             String belowCoordinates = formatCoordinates(xTile, yTile + 1);
@@ -109,7 +113,6 @@ public class Maze {
             }
         }
         else {
-            System.out.println(dynamicEntity.toString() + " TURN");
             possibleDirections.add(dynamicEntity.getDirection());
             possibleDirections.add(dynamicEntity.getDirection().opposite());
         }

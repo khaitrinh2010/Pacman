@@ -9,7 +9,6 @@ import pacman.model.level.Level;
 import java.util.*;
 
 public class Pacman implements Controllable {
-
     public static final int PACMAN_IMAGE_SWAP_TICK_COUNT = 8;
     private final Layer layer = Layer.FOREGROUND;
     private final Map<PacmanVisual, Image> images;
@@ -18,6 +17,7 @@ public class Pacman implements Controllable {
     private KinematicState kinematicState;
     private Image currentImage;
     private Set<Direction> possibleDirections;
+    private Direction lastDirection;
     private boolean isClosedImage;
 
     public Pacman(
@@ -60,6 +60,26 @@ public class Pacman implements Controllable {
     }
 
     public void update() {
+        if(lastDirection != null){
+            if (isValidMove(lastDirection)){
+                switch (lastDirection){
+                    case UP:
+                        up();
+                        break;
+                    case DOWN:
+                        down();
+                        break;
+                    case LEFT:
+                        left();
+                        break;
+                    case RIGHT:
+                        right();
+                        break;
+                }
+                lastDirection = null;
+            }
+
+        }
         kinematicState.update();
         this.boundingBox.setTopLeft(this.kinematicState.getPosition());
     }
@@ -102,8 +122,8 @@ public class Pacman implements Controllable {
     public void collideWith(Level level, Renderable renderable){
         if (level.isCollectable(renderable)){
             Collectable collectable = (Collectable) renderable;
-            level.collect(collectable);
             collectable.collect();
+            level.collect(collectable);
         }
     }
 
@@ -142,7 +162,6 @@ public class Pacman implements Controllable {
     public void setPossibleDirections(Set<Direction> possibleDirections) {
         this.possibleDirections = possibleDirections;
     }
-
     @Override
     public Direction getDirection() {
         return this.kinematicState.getDirection();
@@ -156,5 +175,18 @@ public class Pacman implements Controllable {
     @Override
     public void switchImage(){
         this.isClosedImage = !this.isClosedImage;
+    }
+
+    @Override
+    public boolean isValidMove(Direction direction){
+        return this.possibleDirections.contains(direction);
+    }
+    @Override
+    public void setLastDirection(Direction direction){
+        this.lastDirection = direction;
+    }
+    @Override
+    public Direction getLastDirection(){
+        return this.lastDirection;
     }
 }

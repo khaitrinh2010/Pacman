@@ -1,13 +1,16 @@
 package pacman.model.engine;
 
 import pacman.model.entity.Renderable;
+import pacman.view.ui.Observer;
+import pacman.view.ui.Subject;
+
 import java.util.List;
 
 
 /**
  * The base interface for interacting with the Pac-Man model
  */
-public interface GameEngine {
+public interface GameEngine extends Subject {
 
     /**
      * Gets the list of renderables in the game
@@ -45,4 +48,18 @@ public interface GameEngine {
      * Instruct the model to progress forward in time by one increment.
      */
     void tick();
+
+    void registerObserver(Observer observer);
+
+    void removeObserver(Observer observer);
+
+    void notifyObservers();
+    void updatePlayerLives(int lives);
+    void updatePlayerScore(int score);
+    void updateGameState(GameState state);
+    int getPLayerScore();
+    int getPlayerLives();
+    GameState getGameState();
+    void terminateGame();
+    void transitionToNextLevel();
 }

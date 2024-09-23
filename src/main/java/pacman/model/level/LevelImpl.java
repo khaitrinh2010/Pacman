@@ -2,6 +2,8 @@ package pacman.model.level;
 
 import org.json.simple.JSONObject;
 import pacman.ConfigurationParseException;
+import pacman.model.engine.GameEngine;
+import pacman.model.engine.GameState;
 import pacman.model.entity.Renderable;
 import pacman.model.entity.dynamic.DynamicEntity;
 import pacman.model.entity.dynamic.ghost.Ghost;
@@ -25,6 +27,10 @@ import java.util.stream.Collectors;
 public class LevelImpl implements Level {
 
     private static final int START_LEVEL_TIME = 200;
+
+    private static int readyTime = 100;
+
+    private static int overTime = 300;
     private final Maze maze;
     private List<Renderable> renderables;
     private Controllable player;
@@ -34,15 +40,16 @@ public class LevelImpl implements Level {
     private int numLives;
     private List<Renderable> collectables;
     private GhostMode currentGhostMode;
+    private GameEngine gameEngine;
 
     public LevelImpl(JSONObject levelConfiguration,
-                     Maze maze) {
+                     Maze maze, GameEngine gameEngine) {
         this.renderables = new ArrayList<>();
         this.maze = maze;
         this.tickCount = 0;
         this.modeLengths = new HashMap<>();
         this.currentGhostMode = GhostMode.SCATTER;
-
+        this.gameEngine = gameEngine;
         initLevel(new LevelConfigurationReader(levelConfiguration));
     }
 
@@ -69,7 +76,6 @@ public class LevelImpl implements Level {
             ghost.setGhostMode(this.currentGhostMode);
         }
         this.modeLengths = levelConfigurationReader.getGhostModeLengths();
-
         // Set up collectables
         this.collectables = new ArrayList<>(maze.getPellets());
 
@@ -92,17 +98,19 @@ public class LevelImpl implements Level {
 
     @Override
     public void tick() {
-//        if (tickCount == modeLengths.get(currentGhostMode)) {
-//
-//            // update ghost mode
-//            this.currentGhostMode = GhostMode.getNextGhostMode(currentGhostMode);
-//            for (Ghost ghost : this.ghosts) {
-//                ghost.setGhostMode(this.currentGhostMode);
-//            }
-//
-//            tickCount = 0;
-//        }
+        if(gameEngine.getGameState() == GameState.READY){
+            return;
+        }
+        if (tickCount == modeLengths.get(currentGhostMode)) {
 
+            // update ghost mode
+            this.currentGhostMode = GhostMode.getNextGhostMode(currentGhostMode);
+            for (Ghost ghost : this.ghosts) {
+                ghost.setGhostMode(this.currentGhostMode);
+            }
+
+            tickCount = 0;
+        }
         if (tickCount % Pacman.PACMAN_IMAGE_SWAP_TICK_COUNT == 0) {
             this.player.switchImage();
         }
@@ -113,6 +121,10 @@ public class LevelImpl implements Level {
         for (DynamicEntity dynamicEntity : dynamicEntities) {
             maze.updatePossibleDirections(dynamicEntity);
             dynamicEntity.update();
+        }
+
+        for(Ghost ghost: ghosts){
+            ghost.setPlayerPosition(player.getPosition());
         }
 
         for (int i = 0; i < dynamicEntities.size(); ++i) {
@@ -137,7 +149,6 @@ public class LevelImpl implements Level {
                 }
             }
         }
-
         tickCount++;
     }
 
@@ -187,15 +198,39 @@ public class LevelImpl implements Level {
 
     @Override
     public void handleLoseLife() {
+        this.numLives -= 1;
+        if(this.numLives <= 0){
+            handleGameEnd();
+            return;
+        }
+        gameEngine.updatePlayerLives(this.numLives);
+        gameEngine.updateGameState(GameState.READY);
+        maze.reset();
     }
 
     @Override
     public void handleGameEnd() {
-
+        if(this.numLives <= 0){
+            gameEngine.updateGameState(GameState.GAME_OVER);
+        }
+        else{
+            gameEngine.transitionToNextLevel();
+        }
     }
 
     @Override
     public void collect(Collectable collectable) {
-
+        collectables.remove(collectable);
+        gameEngine.updatePlayerScore(gameEngine.getPLayerScore() + collectable.getPoints());
+        if(this.isLevelFinished()){
+            handleGameEnd();
+        }
+    }
+    @Override
+    public void clearGhostAndPacman(){
+        renderables.remove(player);
+        for(Ghost ghost: ghosts){
+            renderables.remove(ghost);
+        }
     }
 }

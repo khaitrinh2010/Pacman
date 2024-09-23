@@ -9,7 +9,7 @@ public class ControlLoader {
         init(pacman);
     }
     public void init(Controllable pacman){
-        remoteController = new RemoteController();
+        remoteController = new RemoteController(pacman);
         remoteController.setCommand(KeyCode.LEFT, new MoveLeftCommand(pacman));
         remoteController.setCommand(KeyCode.DOWN, new MoveDownCommand(pacman));
         remoteController.setCommand(KeyCode.RIGHT, new MoveRightCommand(pacman));

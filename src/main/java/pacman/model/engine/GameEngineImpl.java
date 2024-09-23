@@ -8,7 +8,9 @@ import pacman.model.level.LevelImpl;
 import pacman.model.maze.Maze;
 import pacman.model.maze.MazeCreator;
 
+import java.util.ArrayList;
 import java.util.List;
+import pacman.view.ui.Observer;
 
 /**
  * Implementation of GameEngine - responsible for coordinating the Pac-Man model
@@ -17,13 +19,17 @@ public class GameEngineImpl implements GameEngine {
 
     private Level currentLevel;
     private int numLevels;
-    private final int currentLevelNo;
+    private int currentLevelNo;
     private Maze maze;
     private JSONArray levelConfigs;
+    private List<Observer> observers = new ArrayList<>();
+    private int score;
+    private GameState gameState;
 
+    private int lives;
     public GameEngineImpl(String configPath) {
+        gameState = GameState.READY;
         this.currentLevelNo = 0;
-
         init(new GameConfigurationReader(configPath));
     }
 
@@ -76,12 +82,75 @@ public class GameEngineImpl implements GameEngine {
         JSONObject levelConfig = (JSONObject) levelConfigs.get(currentLevelNo);
         // reset renderables to starting state
         maze.reset();
-        this.currentLevel = new LevelImpl(levelConfig, maze);
+        this.currentLevel = new LevelImpl(levelConfig, maze, this);
+        this.updateGameState(GameState.READY);
     }
 
     @Override
     public void tick() {
         currentLevel.tick();
+    }
+
+    @Override
+    public void registerObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+    @Override
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
+    }
+    public void updatePlayerLives(int lives) {
+        this.lives = lives;
+        notifyObservers();
+    }
+    @Override
+    public void updatePlayerScore(int score) {
+        this.score = score;
+        notifyObservers();
+    }
+    @Override
+    public void updateGameState(GameState state) {
+        this.gameState = state;
+        notifyObservers();
+        if(state == GameState.GAME_OVER || state == GameState.WIN){
+            currentLevel.clearGhostAndPacman();
+        }
+    }
+    @Override
+    public int getPLayerScore() {
+        return score;
+    }
+    @Override
+    public int getPlayerLives() {
+        return this.currentLevel.getNumLives();
+    }
+    @Override
+    public GameState getGameState() {
+        return gameState;
+    }
+    @Override
+    public void terminateGame() {
+        System.exit(0);
+    }
+    @Override
+    public void transitionToNextLevel() {
+        currentLevelNo++;
+        if (currentLevelNo >= numLevels) {
+            if(currentLevel.isLevelFinished()){
+                this.updateGameState(GameState.WIN);
+            }
+        }
+        else {
+            this.updateGameState(GameState.PAUSED);
+            startLevel();
+        }
     }
 
 }

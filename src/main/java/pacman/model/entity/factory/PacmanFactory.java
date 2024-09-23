@@ -15,9 +15,12 @@ public class PacmanFactory extends DynamicEntityFactory {
     }
     @Override
     public Renderable createEntity(Vector2D topLeftPosition){
-        BoundingBox pacmanBoundingBox = new BoundingBoxImpl(topLeftPosition, this.image.getHeight(), this.image.getWidth());
+        double x = topLeftPosition.getX() + 4;
+        double y = topLeftPosition.getY() - 4;
+        Vector2D newPosition = new Vector2D(x, y);
+        BoundingBox pacmanBoundingBox = new BoundingBoxImpl(newPosition, this.image.getHeight(), this.image.getWidth());
         KinematicState pacmanKinematicState = new KinematicStateImpl.KinematicStateBuilder().build();
-        pacmanKinematicState.setPosition(topLeftPosition);
+        pacmanKinematicState.setPosition(newPosition);
         return new Pacman(this.image, mapPacmanVisualToImage(), pacmanBoundingBox, pacmanKinematicState);
     }
 

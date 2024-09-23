@@ -1,5 +1,6 @@
 package pacman.view.keyboard.command;
 
+import pacman.model.entity.dynamic.physics.Direction;
 import pacman.model.entity.dynamic.player.Controllable;
 
 public class MoveLeftCommand implements Command {
@@ -9,6 +10,11 @@ public class MoveLeftCommand implements Command {
     }
     @Override
     public void execute() {
-        pacman.left();
+        if(pacman.isValidMove(Direction.LEFT)) {
+            pacman.left();
+        }
+        else {
+            pacman.setLastDirection(Direction.LEFT);
+        }
     }
 }

@@ -80,28 +80,34 @@ import java.util.*;
         };
     }
 
-    private Direction selectDirection(Set<Direction> possibleDirections) {
-        if (possibleDirections.isEmpty()) {
-            return currentDirection;
-        }
+      private Direction selectDirection(Set<Direction> possibleDirections) {
+          if (possibleDirections.isEmpty()) {
+              return currentDirection;
+          }
 
-        Map<Direction, Double> distances = new HashMap<>();
+          Map<Direction, Double> distances = new HashMap<>();
 
-        for (Direction direction : possibleDirections) {
-            // ghosts never choose to reverse travel
-            if (direction != currentDirection.opposite()) {
-                distances.put(direction, Vector2D.calculateEuclideanDistance(this.kinematicState.getPotentialPosition(direction), this.targetLocation));
-            }
-        }
+          for (Direction direction : possibleDirections) {
+              // ghosts never choose to reverse travel
+              if (direction != currentDirection.opposite()) {
+                  distances.put(direction, Vector2D.calculateEuclideanDistance(this.kinematicState.getPotentialPosition(direction), this.targetLocation));
+              }
+          }
 
-        // select the direction that will reach the target location fastest
-        return Collections.min(distances.entrySet(), Map.Entry.comparingByValue()).getKey();
-    }
+          // select the direction that will reach the target location fastest
+          return Collections.min(distances.entrySet(), Map.Entry.comparingByValue()).getKey();
+      }
+
 
     @Override
     public void setGhostMode(GhostMode ghostMode) {
         this.ghostMode = ghostMode;
         this.kinematicState.setSpeed(speeds.get(ghostMode));
+    }
+
+    @Override
+    public void setPlayerPosition(Vector2D playerPosition) {
+        this.playerPosition = playerPosition;
     }
 
     @Override
